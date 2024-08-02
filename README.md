@@ -39,5 +39,32 @@ Using exiftool on the image reveals that the creater is b0ws53r.
 
 ![exif](https://github.com/user-attachments/assets/6a372813-6216-499a-ad9f-8851eb1d1d98)
 
+Let's run a gobuster and nikto scan on the target:
+
+![gobuster + nikto](https://github.com/user-attachments/assets/52b6696d-72fa-4069-a95e-885787ab9668)
+
+The scans reveal a directory call /app. At first this brings us to a button called jump, and after clicking it a few times, it takes us to toad's expensive website. Let's examine the source code:
+
+![source](https://github.com/user-attachments/assets/5ad9209e-80cc-43d8-9c73-90a87896a060)
+
+The code reveals that the site is using concrete5 8.5.2. I did a little research on exploited this and came across this article on hackerone.com:
+
+![concrete exploit](https://github.com/user-attachments/assets/5d16a8c7-a37d-4bd8-89a7-c5f03afb8414)
+
+I tried a some typical default username and password combos and admin:password worked for the login. Now, we're going to follow the steps described in the hackerone article to change file properties to allow php, and upload a php reverse shell. 
+And we now have a reverse shell as www-data!
+
+![www-data](https://github.com/user-attachments/assets/d8d732b3-4ee2-4e56-82e9-45ce03d92f6f)
+
+I then searched around the home directory but permission is denied for the directories. So, I headed back to www-data's home, and started looking around for useful files. We saw from the source code earlier that the web server is built off of the /app/castle/application. I then found the directory config. It's always a good idea to check the config directory to see if there is senitive info. And the file database.php contains a password for toad.
+
+![su toad](https://github.com/user-attachments/assets/b40596f7-8cfd-43f0-8a4e-dbe45cf34f3f)
+
+I ran sudo -l as toad but toad can't run sudo on this machine. Let's head to /home/toad and see what we can find. smb.txt contains a message from mario:
+
+![smb txt](https://github.com/user-attachments/assets/7d4d89b6-9751-4d8e-8e88-6182f2c6e284)
+
+It's always a good idea to check files such as .bash_history and .bashrc to look for senitive info. I checked out .bashrc and noticed a PWD_token that appears to be base64 encryped.
+
 
 
