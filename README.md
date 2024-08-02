@@ -89,6 +89,7 @@ chmod +x linpeas.sh
 
 I didn't many concrete things that we could use, other some files that we have access to, like the /etc/hosts file. 
 
+# Exploitation
 Let's use pspy to see if we can find processes to exploit:
 
 ![pspy64](https://github.com/user-attachments/assets/db94d3b3-e0b9-4ccb-ad6d-3d1a76525d1d)
@@ -108,7 +109,14 @@ First, let's check out that /etc/hosts file:
 
 The next file to check out is the script in the process command counter.sh:
 
+![counter sh_up log](https://github.com/user-attachments/assets/e9c5459d-3986-4fa8-9a6c-e64e733fd637)
 
+So we don't have write access to counter.sh or up.log. But what we can do, is modify the /etc/hosts file to change the IP of mkingdom.thm:85 to point to our IP. This way, we can make our own counter.sh script and trick the target into executing, as root. So, once the target executes the script, it should give us a reverse shell as root.
 
+The first step will be to modify the /etc/hosts file to point to our IP. I found the easiest way to do this is copy the contents of the /etc/host file onto kali, because using nano and editing the file on the target was finicky and hard to see what I was doing, change the mkingdom IP to ours, and copy the contents back into the targets /etc/hosts file.
+The modified /etc/hosts file should look like this except with the mkingdom IP pointing to the IP of your attack box:
 
+![modified _etc_hosts](https://github.com/user-attachments/assets/2e6104b5-5c7b-4551-8bd0-f86e186fc22c)
+
+Next, on our attack box, create a script replicating counter.sh complete with the file path:
 
