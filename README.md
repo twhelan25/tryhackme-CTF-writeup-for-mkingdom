@@ -87,9 +87,28 @@ chmod +x linpeas.sh
 ./linpeas.sh >> output
 ```
 
-I didn't many concrete things that we could use. Let's use pspy to see if we can find processes to exploit:
+I didn't many concrete things that we could use, other some files that we have access to, like the /etc/hosts file. 
+
+Let's use pspy to see if we can find processes to exploit:
 
 ![pspy64](https://github.com/user-attachments/assets/db94d3b3-e0b9-4ccb-ad6d-3d1a76525d1d)
+
+This process looks like something we can exploit:
+
+![pspy counter sh](https://github.com/user-attachments/assets/824d5ffd-a36a-494e-b15f-d8b8d9ca57d7)
+
+This command starts by downloading the script (counter.sh) from a (mkindom.thm:85).
+The downloaded script is then passed to bash for execution.
+The output produced by the script execution is appended to the log file located at /var/log/up.log.
+This type of command, which downloads and executes a script from the internet without verification, can be very dangerous. As we saw earlier, we have access to /etc/hosts, se we can pontenially execute malicious code. 
+
+First, let's check out that /etc/hosts file:
+
+![etc_hosts](https://github.com/user-attachments/assets/5fb19660-513b-40ae-8711-197105da5953)
+
+The next file to check out is the script in the process command counter.sh:
+
+
 
 
 
