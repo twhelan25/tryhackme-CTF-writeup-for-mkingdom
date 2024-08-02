@@ -56,6 +56,7 @@ And we now have a reverse shell as www-data!
 
 ![www-data](https://github.com/user-attachments/assets/d8d732b3-4ee2-4e56-82e9-45ce03d92f6f)
 
+# Privilege Escalation
 I then searched around the home directory but permission is denied for the directories. So, I headed back to www-data's home, and started looking around for useful files. We saw from the source code earlier that the web server is built off of the /app/castle/application. I then found the directory config. It's always a good idea to check the config directory to see if there is senitive info. And the file database.php contains a password for toad.
 
 ![su toad](https://github.com/user-attachments/assets/b40596f7-8cfd-43f0-8a4e-dbe45cf34f3f)
@@ -66,5 +67,10 @@ I ran sudo -l as toad but toad can't run sudo on this machine. Let's head to /ho
 
 It's always a good idea to check files such as .bash_history and .bashrc to look for senitive info. I checked out .bashrc and noticed a PWD_token that appears to be base64 encryped.
 
+![bashrc](https://github.com/user-attachments/assets/8515dba8-aebf-456d-83b2-680b1b3952ec)
+
+I was then used this password to su mario:
+
+![su mario](https://github.com/user-attachments/assets/ede5ede8-50dd-48e7-98ca-234218844851)
 
 
