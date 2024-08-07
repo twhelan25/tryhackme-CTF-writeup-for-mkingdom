@@ -43,36 +43,37 @@ Let's run a gobuster and nikto scan on the target:
 
 ![gobuster + nikto](https://github.com/user-attachments/assets/52b6696d-72fa-4069-a95e-885787ab9668)
 
-The scans reveal a directory call /app. At first this brings us to a button called jump, and after clicking it a few times, it takes us to toad's expensive website. Let's examine the source code:
+The scans reveal a directory called /app. At first this brings us to a button called jump, and after clicking it a few times, it takes us to toad's expensive website. Let's examine the source code:
 
 ![source](https://github.com/user-attachments/assets/5ad9209e-80cc-43d8-9c73-90a87896a060)
 
-The code reveals that the site is using concrete5 8.5.2. I did a little research on exploited this and came across this article on hackerone.com:
+The code reveals that the site is using concrete5 8.5.2. I did a little research on how to exploit this and came across this article on hackerone.com:
 
 ![concrete exploit](https://github.com/user-attachments/assets/5d16a8c7-a37d-4bd8-89a7-c5f03afb8414)
 
-I tried a some typical default username and password combos and admin:password worked for the login. Now, we're going to follow the steps described in the hackerone article to change file properties to allow php, and upload a php reverse shell. 
+I tried a some typical default username and password combos a very basic combo worked for the login. Now, we're going to follow the steps described in the hackerone article to change file properties to allow php file extensions in settings, and upload a php reverse shell. I'm going to use revshells.com, put in my IP, choose a 4 digit port and pick a shell. I'm going to use php pentest monkey.
 And we now have a reverse shell as www-data!
 
 ![www-data](https://github.com/user-attachments/assets/d8d732b3-4ee2-4e56-82e9-45ce03d92f6f)
 
 # Privilege Escalation
-I then searched around the home directory but permission is denied for the directories. So, I headed back to www-data's home, and started looking around for useful files. We saw from the source code earlier that the web server is built off of the /app/castle/application. I then found the directory config. It's always a good idea to check the config directory to see if there is senitive info. And the file database.php contains a password for toad.
+First, I will check the /etc/passwd file for users. I then searched around the home directory but permission is denied for the directories. So, I headed back to www-data's home, and started looking around for useful files. We saw from the source code earlier that the web server is built off of the /app/castle/application, so I'll search there for something we can use. I then found the directory config. It's always a good idea to check the config directory to see if there is senitive info. And the file database.php contains a plain text password for user toad.
 
 ![su toad](https://github.com/user-attachments/assets/b40596f7-8cfd-43f0-8a4e-dbe45cf34f3f)
 
-I ran sudo -l as toad but toad can't run sudo on this machine. Let's head to /home/toad and see what we can find. smb.txt contains a message from mario:
+I ran sudo -l as toad, but toad can't run sudo on this machine. Let's head to /home/toad and see what we can find. smb.txt contains a message from mario:
 
 ![smb txt](https://github.com/user-attachments/assets/7d4d89b6-9751-4d8e-8e88-6182f2c6e284)
 
-It's always a good idea to check files such as .bash_history and .bashrc to look for senitive info. I checked out .bashrc and noticed a PWD_token that appears to be base64 encryped.
+It's always a good idea to check files such as .bash_history and .bashrc to look for senitive info. I checked out .bashrc and noticed a PWD_token that appears to be base64 encryped. We can decrypt it on the target:
 
 ![bashrc](https://github.com/user-attachments/assets/8515dba8-aebf-456d-83b2-680b1b3952ec)
 
-I was then used this password to su mario:
+I then used this password to su mario:
 
 ![su mario](https://github.com/user-attachments/assets/ede5ede8-50dd-48e7-98ca-234218844851)
 
+Notice that we cannot use the cat command, so I used the less command to view the contents of user.txt.
 Now, let's head to /tmp, and run linpeas. I ran a python server from kali:
 ```bash
 python3 -m http.server
@@ -87,7 +88,7 @@ chmod +x linpeas.sh
 ./linpeas.sh >> output
 ```
 
-I didn't many concrete things that we could use, other some files that we have access to, like the /etc/hosts file. 
+I didn't find many concrete things that we could use, other than some files that we have write access to, like the /etc/hosts file. 
 It's also interesting that toad has /bin/cat:
 
 ![bin_cat](https://github.com/user-attachments/assets/113baa75-f33d-46d7-b107-a2e2e38b4cf8)
@@ -118,7 +119,7 @@ The next file to check out is the script in the process command counter.sh:
 
 ![counter sh_up log](https://github.com/user-attachments/assets/e9c5459d-3986-4fa8-9a6c-e64e733fd637)
 
-So we don't have write access to counter.sh or up.log. But what we can do, is modify the /etc/hosts file to change the IP of mkingdom.thm:85 to point to our IP. This way, we can make our own counter.sh script and trick the target into executing, as root. So, once the target executes the script, it should give us a reverse shell as root.
+So we don't have write access to counter.sh or up.log. But what we can do, is modify the /etc/hosts file to change the IP of mkingdom.thm:85 to point to our IP. This way, we can make our own counter.sh script and trick the target into executing it, as root. So, once the target executes the script, we can change the SUID of the bash binary, so mario can run as root.
 
 The first step will be to modify the /etc/hosts file to point to our IP. I found the easiest way to do this is copy the contents of the /etc/host file onto kali, because using nano and editing the file on the target was finicky and hard to see what I was doing, change the mkingdom IP to ours, and copy the contents back into the targets /etc/hosts file.
 The modified /etc/hosts file should look like this except with the mkingdom IP pointing to the IP of your attack box:
@@ -136,7 +137,7 @@ Then create a bash script for counter.sh. This script will set the SUID bit on /
 
 chmod 4755 /bin/bash
 ```
-Then set up the sever on port 85 directing to our counterfit counter.sh:
+Then set up the sever on port 85 directing to our counterfit version of counter.sh:
 ```bash
 sudo python3 -m http.server 85 --directory /tmp
 ```
@@ -156,4 +157,4 @@ Then, run this command as mario to bash with the SUID privileges:
 
 ![cat_root txt](https://github.com/user-attachments/assets/3f5a0cc5-0c26-43c9-8254-615f495f2dbc)
 
-And we are now root!
+And we are now root! 
