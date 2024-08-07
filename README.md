@@ -88,6 +88,13 @@ chmod +x linpeas.sh
 ```
 
 I didn't many concrete things that we could use, other some files that we have access to, like the /etc/hosts file. 
+It's also interesting that toad has /bin/cat:
+
+![bin_cat](https://github.com/user-attachments/assets/113baa75-f33d-46d7-b107-a2e2e38b4cf8)
+
+We also see that mario has write access to /etc/hosts file:
+
+![linpeas_etc_hosts](https://github.com/user-attachments/assets/897b47cb-db6b-445c-8112-cad10924157d)
 
 # Exploitation
 Let's use pspy to see if we can find processes to exploit:
